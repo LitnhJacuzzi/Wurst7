@@ -8,6 +8,8 @@
 package net.wurstclient.hacks;
 
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Stream;
 
@@ -93,6 +95,8 @@ public final class KillauraHack extends Hack
 	private Entity target;
 	private Entity renderTarget;
 	
+	private final Map<Integer, Long> entityMarker = new HashMap<>();
+	
 	public KillauraHack()
 	{
 		super("Killaura");
@@ -162,12 +166,32 @@ public final class KillauraHack extends Hack
 				e.getBoundingBox().getCenter()) <= fov.getValue() / 2.0);
 		
 		stream = entityFilters.applyTo(stream);
+		stream = stream.filter(e -> {
+			int id = e.getId();
+			if(!entityMarker.containsKey(id))
+			{
+				return true;
+			}else
+			{
+				long hurtTime =
+					System.currentTimeMillis() - entityMarker.get(id);
+				if(hurtTime > 500)
+				{
+					entityMarker.remove(id);
+					return true;
+				}else
+				{
+					return false;
+				}
+			}
+		});
 		
 		target = stream.min(priority.getSelected().comparator).orElse(null);
 		renderTarget = target;
 		if(target == null)
 			return;
 		
+		entityMarker.put(target.getId(), System.currentTimeMillis());
 		WURST.getHax().autoSwordHack.setSlot(target);
 		
 		Vec3 hitVec = target.getBoundingBox().getCenter();
@@ -215,6 +239,11 @@ public final class KillauraHack extends Hack
 		
 		RenderUtils.drawSolidBox(matrixStack, box, quadColor, false);
 		RenderUtils.drawOutlinedBox(matrixStack, box, lineColor, false);
+	}
+	
+	public void onEntityRemoval(Entity e)
+	{
+		entityMarker.remove(e.getId());
 	}
 	
 	private enum Priority

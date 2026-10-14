@@ -57,6 +57,7 @@
     "healthtags.EntityRendererMixin",
     "infinichat.ChatScreenMixin",
     "jesus.BlockStateBaseMixin",
+    "killaura.EntityMixin",
     "nameprotect.StringDecomposerMixin",
     "nametags.EntityRendererMixin",
     "nametags.LivingEntityRendererMixin",
